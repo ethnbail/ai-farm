@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.routes import router
+from app.api.trading import router as trading_router
 from app.core.config import get_settings
 from app.database.session import get_engine
 
@@ -16,13 +17,13 @@ async def lifespan(app: FastAPI):
     get_engine().dispose()
 
 
-app = FastAPI(title="AI Farm", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="AI Farm", version="0.2.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().cors_origins,
     allow_credentials=False,
     allow_methods=["GET"],
-    allow_headers=["Accept", "Content-Type"],
+    allow_headers=["Accept", "Content-Type", "Last-Event-ID"],
 )
 
 
@@ -33,3 +34,5 @@ async def database_error(request: Request, error: SQLAlchemyError):
 
 
 app.include_router(router)
+app.include_router(trading_router, prefix="/api")
+app.include_router(trading_router, include_in_schema=False)

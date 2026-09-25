@@ -1,13 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
 import type { LiveEvent } from "@/lib/types";
 
-export function useLiveEvents() {
+const LiveContext = createContext({
+  status: "Connecting",
+  lastHeartbeat: null as string | null,
+});
+const businessEvents = [
+  "trade_opened",
+  "trade_closed",
+  "stop_loss_triggered",
+  "take_profit_triggered",
+  "portfolio_updated",
+  "agent_status_changed",
+  "risk_trade_rejected",
+  "position_reduced",
+];
+
+// One connection across route transitions. EventSource resumes business events by ID.
+export function LiveEventsProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [status, setStatus] = useState("Connecting");
   const [lastHeartbeat, setLastHeartbeat] = useState<string | null>(null);
-
   useEffect(() => {
     const source = new EventSource(`${API_URL}/api/events`);
     let receivedAt = Date.now();
@@ -22,6 +41,8 @@ export function useLiveEvents() {
         setStatus("Invalid event");
       }
     });
+    const refresh = () => window.dispatchEvent(new Event("ai-farm:update"));
+    for (const event of businessEvents) source.addEventListener(event, refresh);
     source.onerror = () => setStatus("Reconnecting");
     const timer = setInterval(() => {
       if (Date.now() - receivedAt > 90_000) setStatus("Waiting for heartbeat");
@@ -31,6 +52,13 @@ export function useLiveEvents() {
       clearInterval(timer);
     };
   }, []);
+  return (
+    <LiveContext.Provider value={{ status, lastHeartbeat }}>
+      {children}
+    </LiveContext.Provider>
+  );
+}
 
-  return { status, lastHeartbeat };
+export function useLiveEvents() {
+  return useContext(LiveContext);
 }

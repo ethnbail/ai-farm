@@ -1,5 +1,7 @@
 # Phase 1 verification
 
+Historical Phase 1 results. Current results are in [Phase 2 verification](phase2-verification.md).
+
 Verified on this macOS ARM64 workspace using Python 3.12.14 and Node.js 24.19.0. Application dependencies are installed under `backend/.venv` and `frontend/node_modules`; exact resolved versions are recorded in `backend/requirements.lock` and `frontend/package-lock.json`.
 
 | Check | Result |

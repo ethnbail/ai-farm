@@ -1,8 +1,8 @@
 # AI Farm
 
-Phase 1 is a working, read-only foundation for two paper trading agents and a future local resale agent. It includes a warm 2D dashboard, agent details, PostgreSQL persistence, migrations, development seeding, service health, and a live SSE heartbeat.
+Phase 2 adds a deterministic **paper-trading engine** to the working Phase 1 dashboard. Agent A trades long equities/ETFs; Agent B trades long calls/puts. Each has its own portfolio, cash, positions, risk limits, and performance statistics. The dashboard shows positions, recorded trade replay, and durable SSE activity.
 
-No trading strategies, order execution, brokerage integrations, marketplace scraping, paid AI calls, or 3D world are implemented. Agent A and Agent B start idle with $1,000 in paper funds each. Development seeding never creates trades or resets existing balances.
+All prices and Greeks are explicitly MOCK fixtures. There is no real broker, real-money executor, external market-data request, marketplace scraping, AI call, or 3D world. Agent A and Agent B start idle with $1,000 each. Seeding never creates trades or resets balances. The worker is opt-in; risk rejection and NO_TRADE are expected outcomes.
 
 ## Quick start: the whole stack in Docker
 
@@ -85,7 +85,7 @@ The dev and build scripts explicitly use Next.js's supported Webpack bundler. Tu
 
 ## Verification
 
-Backend tests are isolated SQLite databases created through Alembic, with no broker or external API access. Redis health is stubbed in unit tests; the smoke test checks the real services. Unit fixtures contain synthetic trade rows solely to test calculations; development seed data contains no trades.
+Backend tests use isolated SQLite databases created through Alembic, with no real broker or external API access. They exercise simulated fills, isolated accounting, full-premium options risk, stops/targets, expiration, market hours, atomic rollback, events, migrations, and performance. Redis is stubbed in unit tests; separate integration verification uses actual PostgreSQL and Redis. Development seed data contains no trades.
 
 ```sh
 cd backend
@@ -114,7 +114,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Alternatively, with Google Chrome installed: `PLAYWRIGHT_CHANNEL=chrome npm run test:e2e`. Browser tests expect the default $1,000 balances and no trades; use a fresh development database. They do not modify backend data.
+Alternatively, with Google Chrome installed: `PLAYWRIGHT_CHANNEL=chrome npm run test:e2e`. The first three tests expect default $1,000 balances and no trades and make no backend changes. A fourth, opt-in lifecycle test **writes paper trades** to the backend selected by `DATABASE_URL`; use a disposable database and run `PAPER_E2E=1 PLAYWRIGHT_CHANNEL=chrome npm run test:e2e -- --workers=1`. The running API and the test's backend CLI must use the same database. The test disables polling to prove SSE refresh, and requires `backend/.venv/bin/python` plus Redis. A second run needs another fresh database; tests never reset your data.
 
 From the root, `python3 infra/smoke.py` verifies HTTP health, real PostgreSQL/Redis connectivity, both agents, detail/trade endpoints, and one SSE heartbeat. To inspect the stream directly:
 
@@ -131,11 +131,12 @@ backend/
     api/        Read-only routes and SSE transport
     core/       Validated backend-only settings
     database/   SQLAlchemy sessions and explicit development seeding
-    models/     Agent, Trade, MarketplaceOpportunity, SystemEvent
+    models/     Agents, portfolios, orders, fills, positions, trades, events, benchmarks
     schemas/    Pydantic response and event contracts
-    services/   Agent summaries, health checks, heartbeat generation
-    agents/     Reserved module; no strategies or execution
-    workers/    Reserved module; no background jobs
+    services/   Final risk authority, paper broker, accounting, metrics, durable events
+    market_data/ Provider protocols, normalized quotes, deterministic mock fixtures
+    agents/     Transparent equity/options strategy proposals
+    workers/    Redis-coordinated scheduler and explicit development demo CLI
   migrations/   Versioned Alembic schema
   tests/        API, migration, seed, input, and failure checks
 infra/          Dockerfiles, configuration helper, smoke check
@@ -143,14 +144,47 @@ docs/           Architecture, verification results, exact file inventory
 compose.yaml    Local development stack
 ```
 
-The browser reads the FastAPI API and subscribes to `/api/events` with `EventSource`. API data refreshes every 15 seconds; the heartbeat defaults to every 5 seconds. PostgreSQL owns durable records. Redis is running and health-checked but does not yet transport events or execute jobs. Exact balances and prices use Decimal/Numeric; API decimal values are strings, with frontend conversion only for display.
+The browser reads FastAPI and shares one `/api/events` EventSource across pages. Business events refresh data immediately; 15-second polling remains a fallback. Heartbeats default to 5 seconds. PostgreSQL owns durable records and ordered, replayable business events; Redis provides worker leases and job deadlines, not event storage. Decimal/Numeric handles all accounting; frontend numbers are display-only.
 
-See [architecture](docs/architecture.md), [verification results](docs/verification.md), and the [complete file inventory](docs/phase1-files.md).
+See [trading architecture](docs/trading-engine.md), [risk controls](docs/risk-engine.md), [paper fills](docs/paper-broker.md), [market data](docs/market-data.md), [Phase 2 verification](docs/phase2-verification.md), and [changed files](docs/phase2-files.md). Phase 1 documents remain historical references.
+
+## Run the deterministic paper simulation
+
+With PostgreSQL/Redis running and the backend environment installed, from the root:
+
+```sh
+cd backend
+.venv/bin/alembic upgrade head
+.venv/bin/python -m app.database.seed
+ENABLE_DEVELOPMENT_ACTIONS=true .venv/bin/python -m app.workers.cli demo --stage entry
+ENABLE_DEVELOPMENT_ACTIONS=true .venv/bin/python -m app.workers.cli demo --stage mark
+ENABLE_DEVELOPMENT_ACTIONS=true .venv/bin/python -m app.workers.cli demo --stage exit --outcome target
+```
+
+Keep the dashboard open to watch each stage. For a complete stop-loss scenario after the first run has closed:
+
+```sh
+ENABLE_DEVELOPMENT_ACTIONS=true .venv/bin/python -m app.workers.cli demo --outcome stop
+```
+
+These commands persist paper trades and compound existing balances; **they do not reset accounts**. Stop the scheduled worker before staged demos. The demo clock is fixed at September 24, 2026, 14:00 UTC, independent of actual market hours. Old simulation timestamps are correctly marked STALE relative to wall-clock time in the UI; replay retains the original MOCK source. On a fresh $1,000 account, the target demo finishes at $1,005.88 for A and $1,010.59 for B. The fictional FARM option is small enough for the full-premium risk cap; the SPY option is rejected, not force-sized.
+
+For Docker, use `docker compose exec -e ENABLE_DEVELOPMENT_ACTIONS=true backend python -m app.workers.cli demo`. For scheduled paper trading, opt in explicitly:
+
+```sh
+# Native, from backend/ (uses actual exchange hours):
+PAPER_WORKER_ENABLED=true .venv/bin/python -m app.workers.scheduler
+# Or, from root, the optional Compose profile:
+docker compose --profile paper up --build -d
+```
+
+Do not run a native worker and the Compose worker together. The worker uses deterministic cycling MOCK fixtures, not a profitable trading system. Stop the native process with Ctrl-C or the container with `docker compose --profile paper stop paper-worker`.
 
 ## Configuration and boundaries
 
 - `.env` and local artifacts are ignored. `.env.example` contains placeholders only.
 - Starting balances are configured with `AGENT_A_STARTING_BALANCE` and `AGENT_B_STARTING_BALANCE` before first seeding. Reseeding never overwrites existing agents.
+- New Phase 2 settings have safe defaults; existing `.env` files need not be overwritten. See `.env.example` for the complete controls. `TRADING_MODE` other than `paper` fails closed. `MARKET_DATA_PROVIDER` other than `mock` is unavailable until an adapter is implemented.
 - `CORS_ORIGINS` is a JSON array of allowed origins. Defaults cover localhost and 127.0.0.1 on port 3000. Wildcard origins are rejected.
 - `OPENAI_API_KEY`, `MARKET_DATA_API_KEY`, and `DISCORD_WEBHOOK_URL` are backend-only, optional, and unused. `AI_MONTHLY_BUDGET_USD` may be blank; the UI shows an unconfigured budget and usage placeholders.
 - `/health` returns 200 when both database and Redis checks pass, or 503 with explicit component statuses. The heartbeat only proves stream connectivity; it does not claim the agents are running or the database is healthy.
@@ -158,8 +192,8 @@ See [architecture](docs/architecture.md), [verification results](docs/verificati
 
 ## Deferred work
 
-Real agent execution (including paper-trade simulation), options contract details, risk controls, market data, brokerage connections, marketplace collection and scoring, editable ZIP/radius, AI metering, persistent business-event delivery/replay, authentication, and the 3D farm remain future work. Empty trade history, inactive marketplace setup, and AI usage placeholders are intentional.
+Real execution, live market-data adapters, sophisticated option pricing, full historical chart replay, marketplace collection/scoring, editable ZIP/radius, AI reasoning/metering, authentication, and the 3D farm remain future work. Commissions, taxes, corporate actions, exchange depth, physical option exercise/delivery, and assignment are not modeled. Options expire via documented synthetic cash settlement. Empty history before the first demo, inactive marketplace, and disabled AI usage are intentional.
 
 The same service boundaries can run on a Proxmox Linux VM. Before remote deployment, use production process commands, production images without development mounts/reload, a TLS reverse proxy with SSE buffering disabled, authentication, managed secrets, backups, monitoring, and explicit remote CORS/API origins. Those deployment changes are not implemented in Phase 1.
 
-Suggested commit message: `feat: scaffold AI Farm phase 1 dashboard and backend`
+Suggested commit message: `feat: add Phase 2 deterministic paper-trading engine`

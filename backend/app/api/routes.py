@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -11,7 +11,7 @@ from app.database.session import get_session
 from app.models import Agent, MarketplaceOpportunity, Trade
 from app.schemas.dashboard import AgentSummary, AIUsage, Health, MarketplaceSummary, TradeRead
 from app.services.agents import summarize_agents
-from app.services.events import heartbeat_stream
+from app.services.events import live_stream
 from app.services.health import get_health
 
 router = APIRouter()
@@ -27,11 +27,13 @@ def health(response: Response):
 
 
 @router.get("/api/agents", response_model=list[AgentSummary], tags=["agents"])
+@router.get("/agents", response_model=list[AgentSummary], include_in_schema=False)
 def list_agents(session: DbSession):
     return summarize_agents(session)
 
 
 @router.get("/api/agents/{agent_id}", response_model=AgentSummary, tags=["agents"])
+@router.get("/agents/{agent_id}", response_model=AgentSummary, include_in_schema=False)
 def agent_detail(agent_id: UUID, session: DbSession):
     agents = summarize_agents(session, agent_id)
     if not agents:
@@ -40,6 +42,7 @@ def agent_detail(agent_id: UUID, session: DbSession):
 
 
 @router.get("/api/agents/{agent_id}/trades", response_model=list[TradeRead], tags=["agents"])
+@router.get("/agents/{agent_id}/trades", response_model=list[TradeRead], include_in_schema=False)
 def agent_trades(
     agent_id: UUID,
     session: DbSession,
@@ -71,9 +74,13 @@ def ai_usage():
 
 
 @router.get("/api/events", tags=["system"])
-async def live_events():
+async def live_events(last_event_id: Annotated[str | None, Header()] = None):
+    if last_event_id is not None and (not last_event_id.isdigit() or len(last_event_id) > 18):
+        raise HTTPException(422, "Last-Event-ID must be a nonnegative sequence number")
     return StreamingResponse(
-        heartbeat_stream(get_settings().heartbeat_interval_seconds),
+        live_stream(
+            get_settings().heartbeat_interval_seconds, int(last_event_id) if last_event_id else None
+        ),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
     )

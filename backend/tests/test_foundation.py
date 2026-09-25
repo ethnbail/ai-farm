@@ -154,6 +154,16 @@ def test_migration_round_trip_and_model_parity(database):
         "marketplace_opportunities",
         "system_events",
         "alembic_version",
+        "portfolios",
+        "positions",
+        "orders",
+        "fills",
+        "option_contract_snapshots",
+        "risk_events",
+        "performance_snapshots",
+        "benchmarks",
+        "market_state",
+        "event_counter",
     }
     command.check(config)
     command.downgrade(config, "base")

@@ -19,6 +19,8 @@ class AgentSummary(BaseModel):
     completed_trades: int
     status: Literal["idle", "running", "paused", "error"]
     created_at: datetime
+    open_positions: int = 0
+    valuation_state: str = "unavailable"
 
 
 class TradeRead(BaseModel):
@@ -40,6 +42,21 @@ class TradeRead(BaseModel):
     entry_time: datetime
     exit_time: datetime | None
     reasoning: str | None
+    portfolio_id: UUID | None = None
+    requested_price: Decimal | None = None
+    fill_price: Decimal | None = None
+    realized_return_percent: Decimal | None = None
+    position_size: Decimal | None = None
+    account_equity_at_entry: Decimal | None = None
+    percent_allocated: Decimal | None = None
+    maximum_planned_loss: Decimal | None = None
+    strategy_name: str | None = None
+    strategy_version: str | None = None
+    market_data_mode: str | None = None
+    data_timestamp: datetime | None = None
+    exit_reason: str | None = None
+    entry_snapshot: dict | None = None
+    risk_calculation: dict | None = None
 
 
 class MarketplaceSummary(BaseModel):

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings, get_settings
 from app.database.session import get_engine
 from app.models import Agent
+from app.services.accounting import ensure_portfolio
 
 
 def seed_agents(session: Session, settings: Settings) -> list[Agent]:
@@ -24,8 +25,12 @@ def seed_agents(session: Session, settings: Settings) -> list[Agent]:
                     status="idle",
                 )
             )
+    session.flush()
+    agents = list(session.scalars(select(Agent).order_by(Agent.name)))
+    for agent in agents:
+        ensure_portfolio(session, agent)
     session.commit()
-    return list(session.scalars(select(Agent).order_by(Agent.name)))
+    return agents
 
 
 def main() -> None:

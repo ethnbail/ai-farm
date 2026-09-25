@@ -1,4 +1,4 @@
-"""Check the running Phase 1 stack using only the Python standard library."""
+"""Read-only checks of the running stack using only the Python standard library."""
 
 import argparse
 import json
@@ -21,8 +21,14 @@ assert {a["name"] for a in agents} == {"Agent A", "Agent B"}, agents
 for agent in agents:
     assert get(f"/api/agents/{agent['id']}")["id"] == agent["id"]
     assert isinstance(get(f"/api/agents/{agent['id']}/trades"), list)
+    portfolio = get(f"/api/agents/{agent['id']}/portfolio")
+    assert portfolio["agent_id"] == agent["id"]
+    assert isinstance(get(f"/api/agents/{agent['id']}/positions"), list)
+    assert "equity" in get(f"/api/agents/{agent['id']}/performance")
+assert get("/api/market/status")["paper_only"] is True
+assert isinstance(get("/api/activity"), list)
 print(
-    "Health, PostgreSQL, Redis, both agents, details, and trade-history endpoints: OK"
+    "Health, PostgreSQL, Redis, agents, portfolios, positions, performance, trades, and activity: OK"
 )
 
 with urlopen(f"{args.api}/api/events", timeout=10) as response:

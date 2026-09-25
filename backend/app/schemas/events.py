@@ -12,6 +12,11 @@ EventType = Literal[
     "price_drop_detected",
     "agent_status_changed",
     "risk_limit_triggered",
+    "risk_trade_rejected",
+    "stop_loss_triggered",
+    "take_profit_triggered",
+    "portfolio_updated",
+    "position_reduced",
 ]
 
 

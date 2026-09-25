@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon } from "@/components/ui";
+import { LiveEventsProvider } from "@/hooks/use-live-events";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,7 +30,7 @@ export default function RootLayout({
               AI Farm
             </Link>
             <span className="text-xs font-medium uppercase tracking-widest text-muted">
-              Phase 01 <span className="mx-2">/</span> Foundation
+              PAPER TRADING <span className="mx-2">/</span> Phase 02
             </span>
           </div>
         </header>
@@ -37,7 +38,7 @@ export default function RootLayout({
           id="main"
           className="mx-auto max-w-7xl px-6 py-10 sm:px-10 sm:py-14"
         >
-          {children}
+          <LiveEventsProvider>{children}</LiveEventsProvider>
         </main>
         <footer className="mx-auto flex max-w-7xl flex-wrap justify-between gap-3 px-6 pb-8 text-xs text-muted sm:px-10">
           <p>AI Farm · Small beginnings, thoughtful growth.</p>

@@ -3,7 +3,17 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import JSON, CheckConstraint, DateTime, ForeignKey, Numeric, String, Text, func
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Numeric,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.base import Base
@@ -51,6 +61,21 @@ class Trade(Base):
     entry_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     exit_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     reasoning: Mapped[str | None] = mapped_column(Text)
+    portfolio_id: Mapped[UUID | None] = mapped_column(ForeignKey("portfolios.id"), index=True)
+    requested_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4))
+    fill_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4))
+    realized_return_percent: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
+    position_size: Mapped[Decimal | None] = mapped_column(Numeric(18, 2))
+    account_equity_at_entry: Mapped[Decimal | None] = mapped_column(Numeric(18, 2))
+    percent_allocated: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
+    maximum_planned_loss: Mapped[Decimal | None] = mapped_column(Numeric(18, 2))
+    strategy_name: Mapped[str | None] = mapped_column(String(100))
+    strategy_version: Mapped[str | None] = mapped_column(String(30))
+    market_data_mode: Mapped[str | None] = mapped_column(String(20))
+    data_timestamp: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    exit_reason: Mapped[str | None] = mapped_column(String(100))
+    entry_snapshot: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    risk_calculation: Mapped[dict[str, Any] | None] = mapped_column(JSON)
 
 
 class MarketplaceOpportunity(Base):
@@ -81,3 +106,4 @@ class SystemEvent(Base):
     source: Mapped[str] = mapped_column(String(100))
     payload: Mapped[dict[str, Any]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    sequence: Mapped[int | None] = mapped_column(BigInteger, unique=True)

@@ -66,9 +66,11 @@ export function Badge({
 
 export function Metric({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div>
+    <div className="min-w-0">
       <dt className="text-sm text-muted">{label}</dt>
-      <dd className="mt-2 text-xl font-medium tabular-nums">{value}</dd>
+      <dd className="mt-2 break-words text-xl font-medium tabular-nums">
+        {value}
+      </dd>
     </div>
   );
 }

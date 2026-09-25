@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Badge, ConnectionNotice, Icon, Metric } from "@/components/ui";
+import { MarketBanner, RecentActivity } from "@/components/trading";
 import { useLiveEvents } from "@/hooks/use-live-events";
 import { useResource } from "@/hooks/use-resource";
 import { money, percent } from "@/lib/format";
@@ -26,10 +27,13 @@ function AgentCard({ agent }: { agent: Agent }) {
         {equities ? "Equities / ETFs" : "Options"}
       </p>
       <p className="mt-8 text-xs uppercase tracking-widest text-muted">
-        Paper balance
+        Current equity
       </p>
       <p className="mt-2 text-4xl font-medium tracking-tight tabular-nums">
         {money(agent.current_balance)}
+      </p>
+      <p className="mt-2 text-xs text-muted">
+        Valuation: {agent.valuation_state.toUpperCase()} DATA
       </p>
       <dl className="mt-7 grid grid-cols-2 gap-4 border-t border-line pt-5">
         <Metric
@@ -37,6 +41,7 @@ function AgentCard({ agent }: { agent: Agent }) {
           value={percent(agent.total_return_percent)}
         />
         <Metric label="Trades" value={agent.total_trades} />
+        <Metric label="Open positions" value={agent.open_positions} />
       </dl>
       <div className="mt-7 flex items-center justify-between text-sm font-medium">
         <span>View agent</span>
@@ -186,6 +191,7 @@ export function Dashboard() {
         </div>
         <Badge active>Paper environment</Badge>
       </div>
+      <MarketBanner />
       <ConnectionNotice error={error} />
       <div className="grid gap-5 lg:grid-cols-3">
         {agents?.map((agent) => (
@@ -219,11 +225,13 @@ export function Dashboard() {
         <SystemCard />
         <AIUsageCard />
       </div>
+      <RecentActivity />
       <div className="mt-8 flex items-start gap-3 rounded-2xl border border-line px-5 py-4 text-sm text-muted">
         <Icon className="shrink-0 text-green" />
         <p>
-          The foundation is planted. Your agents are idle while the next pieces
-          take root. All balances are paper funds.
+          Independent paper accounts, deterministic rules. Scheduled trading is
+          opt-in, and the risk engine may choose not to trade. All balances are
+          paper funds.
         </p>
       </div>
     </>

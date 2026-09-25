@@ -1,5 +1,7 @@
 # Phase 1 architecture
 
+Historical Phase 1 snapshot. See [Phase 2 trading architecture](trading-engine.md) for the current engine, worker and durable-event design.
+
 ## Service boundaries
 
 The Next.js App Router owns pages and presentation. Client data hooks own REST reads and `EventSource` lifecycle; reusable UI components own cards and metrics. Agent details use a real UUID route and separate API data. A later client-only React Three Fiber scene can consume these same hooks and contracts without moving configuration or business logic into scene components. No Three.js dependency or canvas is necessary yet.

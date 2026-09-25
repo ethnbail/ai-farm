@@ -1,0 +1,90 @@
+name: ai-farm
+
+x-backend: &backend
+  build:
+    context: ./backend
+    dockerfile: ../infra/backend.Dockerfile
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-ai_farm}:${POSTGRES_PASSWORD:?Run python3 infra/init_env.py}@postgres:5432/${POSTGRES_DB:-ai_farm}
+    REDIS_URL: redis://:${REDIS_PASSWORD:?Run python3 infra/init_env.py}@redis:6379/0
+  volumes:
+    - ./backend:/app/backend
+  working_dir: /app/backend
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ai_farm}
+      POSTGRES_DB: ${POSTGRES_DB:-ai_farm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run python3 infra/init_env.py}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Run python3 infra/init_env.py}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?Run python3 infra/init_env.py}
+    command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  init:
+    <<: *backend
+    command: ["sh", "-c", "alembic upgrade head && python -m app.database.seed"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  backend:
+    <<: *backend
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "app"]
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../infra/frontend.Dockerfile
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      NEXT_TELEMETRY_DISABLED: "1"
+    command: ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./frontend/src:/app/frontend/src:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:

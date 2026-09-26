@@ -107,6 +107,13 @@ export interface Performance {
   sharpe: string | null;
   sortino: string | null;
   statistics_note: string | null;
+  benchmark_comparison: {
+    portfolio_return: string;
+    benchmark_return: string;
+    excess_return: string;
+    benchmark_max_drawdown: string;
+    note: string;
+  } | null;
   benchmark: {
     name: string;
     data_state: string;
@@ -175,7 +182,16 @@ export type EventType =
   | "portfolio_updated"
   | "stop_loss_triggered"
   | "take_profit_triggered"
-  | "position_reduced";
+  | "position_reduced"
+  | "market_regime_changed"
+  | "opportunity_discovered"
+  | "opportunity_shortlisted"
+  | "ai_analysis_completed"
+  | "ai_budget_warning"
+  | "shadow_review_completed"
+  | "market_data_stale"
+  | "market_data_restored"
+  | "marketplace_opportunity_created";
 
 export interface LiveEvent {
   id: string;

@@ -77,6 +77,12 @@ class RiskEngine:
             "New entries require a regular US market session",
         )
         require(portfolio.equity > 0, "equity", "Account equity must be positive")
+        from app.services.event_context import EventContextService
+
+        event_block = EventContextService().blocked(
+            session, s, quote.underlying_symbol or quote.symbol, now, quote.mode
+        )
+        require(event_block is None, "event_risk", event_block or "Event risk")
         require(
             request.stop_loss is not None
             and request.take_profit is not None
@@ -129,6 +135,19 @@ class RiskEngine:
             / unit_cost,
         ]
         if quote.asset_type == "option":
+            require(
+                quote.mode != "live"
+                or (
+                    quote.greeks_timestamp is not None
+                    and -5 <= (now - quote.greeks_timestamp).total_seconds() <= 86400
+                    and all(
+                        v is not None
+                        for v in [quote.iv, quote.delta, quote.gamma, quote.theta, quote.vega]
+                    )
+                ),
+                "option_data_quality",
+                "Live options require complete Greeks with a verified recent timestamp",
+            )
             dte = (quote.expiration - now.date()).days
             require(
                 s.min_option_dte <= dte <= s.max_option_dte,

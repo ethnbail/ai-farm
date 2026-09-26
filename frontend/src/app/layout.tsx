@@ -30,7 +30,7 @@ export default function RootLayout({
               AI Farm
             </Link>
             <span className="text-xs font-medium uppercase tracking-widest text-muted">
-              PAPER TRADING <span className="mx-2">/</span> Phase 02
+              PAPER TRADING <span className="mx-2">/</span> Phase 03
             </span>
           </div>
         </header>

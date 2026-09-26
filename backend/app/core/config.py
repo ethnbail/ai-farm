@@ -61,6 +61,36 @@ class Settings(BaseSettings):
     option_stop_percent: Decimal = Field(default=Decimal("30"), gt=0, lt=100)
     option_target_percent: Decimal = Field(default=Decimal("50"), gt=0)
     minimum_performance_trades: int = Field(default=5, ge=5)
+    intelligence_enabled: bool = False
+    market_timeout_seconds: float = Field(default=5, gt=0, le=15)
+    market_retries: int = Field(default=1, ge=0, le=2)
+    market_max_requests_per_scan: int = Field(default=30, ge=1, le=100)
+    market_max_chain_expirations: int = Field(default=2, ge=1, le=4)
+    agent_a_universe: list[str] = ["SPY", "QQQ", "NVDA"]
+    agent_b_universe: list[str] = ["SPY", "FARM"]
+    opportunity_top_k: int = Field(default=3, ge=1, le=10)
+    opportunity_ttl_seconds: int = Field(default=300, ge=30, le=3600)
+    opportunity_min_score: Decimal = Field(default=Decimal("50"), ge=0, le=100)
+    ai_enabled: bool = False
+    ai_daily_budget_usd: Decimal | None = Field(default=Decimal("1"), ge=0)
+    ai_cheap_model: str = ""
+    ai_reasoning_model: str = ""
+    ai_shadow_model: str = ""
+    # Operator-supplied, verified USD per million token prices by exact model ID.
+    ai_model_prices: dict[str, dict[str, Decimal]] = {}
+    ai_max_calls_per_scan: int = Field(default=4, ge=0, le=20)
+    ai_max_calls_per_day: int = Field(default=30, ge=0, le=1000)
+    ai_max_output_tokens: int = Field(default=1200, ge=100, le=4096)
+    ai_max_context_bytes: int = Field(default=16000, ge=1000, le=32000)
+    ai_priority_reserve_percent: Decimal = Field(default=Decimal("10"), ge=0, le=50)
+    ai_timeout_seconds: float = Field(default=15, ge=1, le=30)
+    event_data_provider: str = "unavailable"
+    event_data_api_key: SecretStr | None = None
+    block_high_impact_events: bool = True
+    event_block_window_minutes: int = Field(default=60, ge=0, le=1440)
+    require_event_coverage: bool = False
+    marketplace_mode: str = "manual"
+    local_writes_enabled: bool = False
 
     @model_validator(mode="after")
     def ordered_ranges(self):
@@ -72,7 +102,7 @@ class Settings(BaseSettings):
             raise ValueError("Fast moving average window must be shorter than slow window")
         return self
 
-    @field_validator("ai_monthly_budget_usd", mode="before")
+    @field_validator("ai_monthly_budget_usd", "ai_daily_budget_usd", mode="before")
     @classmethod
     def blank_budget_is_unconfigured(cls, value):
         return None if value == "" else value
@@ -85,6 +115,26 @@ class Settings(BaseSettings):
         ):
             raise ValueError("CORS requires explicit http(s) origins")
         return origins
+
+    @field_validator("agent_a_universe", "agent_b_universe")
+    @classmethod
+    def valid_universe(cls, symbols):
+        import re
+
+        if len(symbols) > 30 or any(not re.fullmatch(r"[A-Z][A-Z0-9.-]{0,9}", s) for s in symbols):
+            raise ValueError("Universe requires at most 30 normalized equity symbols")
+        return list(dict.fromkeys(symbols))
+
+    @field_validator("ai_model_prices")
+    @classmethod
+    def valid_prices(cls, prices):
+        if any(
+            set(rates) != {"input", "output"}
+            or any(not v.is_finite() or v <= 0 for v in rates.values())
+            for rates in prices.values()
+        ):
+            raise ValueError("Each model requires positive finite input/output USD per million")
+        return prices
 
 
 @lru_cache

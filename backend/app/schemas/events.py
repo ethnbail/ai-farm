@@ -17,6 +17,15 @@ EventType = Literal[
     "take_profit_triggered",
     "portfolio_updated",
     "position_reduced",
+    "market_regime_changed",
+    "opportunity_discovered",
+    "opportunity_shortlisted",
+    "ai_analysis_completed",
+    "ai_budget_warning",
+    "shadow_review_completed",
+    "market_data_stale",
+    "market_data_restored",
+    "marketplace_opportunity_created",
 ]
 
 

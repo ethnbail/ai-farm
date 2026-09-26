@@ -72,10 +72,29 @@ def positions(agent_id: UUID, session: DbSession):
 def performance_metrics(agent_id: UUID, session: DbSession):
     account = portfolio_for(session, agent_id)
     benchmark = session.scalar(select(Benchmark).where(Benchmark.portfolio_id == account.id))
+    comparison = None
+    if (
+        benchmark
+        and benchmark.portfolio_equity_at_start
+        and benchmark.data_state in {"mock", "live"}
+    ):
+        matched_return = percent(
+            account.equity - benchmark.portfolio_equity_at_start,
+            benchmark.portfolio_equity_at_start,
+        )
+        comparison = dict(
+            started_at=benchmark.started_at,
+            portfolio_return=matched_return,
+            benchmark_return=benchmark.total_return_percent,
+            excess_return=matched_return - benchmark.total_return_percent,
+            benchmark_max_drawdown=benchmark.max_drawdown_percent,
+            note="Matched observation period; portfolio lifetime drawdown is reported separately",
+        )
     return public(
         {
             **performance(session, account, get_settings().minimum_performance_trades),
             "benchmark": benchmark,
+            "benchmark_comparison": comparison,
         }
     )
 

@@ -59,7 +59,13 @@ def demo_step(session, settings, stage, outcome):
 
 def main():
     parser = argparse.ArgumentParser(description="AI Farm deterministic PAPER trading controls")
-    parser.add_argument("command", choices=["demo", "scan", "monitor"])
+    parser.add_argument(
+        "command", choices=["demo", "scan", "monitor", "research", "marketplace-fixture"]
+    )
+    parser.add_argument("--execute", action="store_true", help="Submit approved PAPER proposals")
+    parser.add_argument(
+        "--demo", action="store_true", help="Current-clock mock research; no paid AI"
+    )
     parser.add_argument("--stage", choices=["entry", "mark", "exit", "full"], default="full")
     parser.add_argument("--outcome", choices=["target", "stop"], default="target")
     args = parser.parse_args()
@@ -69,9 +75,47 @@ def main():
     with Redis.from_url(
         settings.redis_url.get_secret_value(), socket_timeout=3, socket_connect_timeout=3
     ) as redis:
-        with redis.lock("ai-farm:paper-engine", timeout=120, blocking_timeout=2):
+        with redis.lock("ai-farm:paper-engine", timeout=120, blocking_timeout=2) as lease:
             with Session(get_engine()) as session:
-                if args.command == "demo":
+                if args.command == "research":
+                    from app.workers.intelligence import run_intelligence
+
+                    if args.demo:
+                        if not settings.enable_development_actions:
+                            raise ValueError("Mock demo requires ENABLE_DEVELOPMENT_ACTIONS=true")
+                        settings = settings.model_copy(
+                            update={
+                                "market_data_provider": "mock",
+                                "ai_enabled": False,
+                                "regular_hours_only": False,
+                            }
+                        )
+                    for agent in seed_agents(session, settings):
+                        candidates = run_intelligence(
+                            session,
+                            settings,
+                            agent.id,
+                            execute=args.execute,
+                            execution_guard=lease.owned,
+                        )
+                        print(
+                            json.dumps(
+                                {
+                                    "agent": agent.name,
+                                    "candidates": len(candidates),
+                                    "paper_execution_requested": args.execute,
+                                }
+                            )
+                        )
+                elif args.command == "marketplace-fixture":
+                    if not settings.enable_development_actions:
+                        raise ValueError("Fixture import requires ENABLE_DEVELOPMENT_ACTIONS=true")
+                    from app.services.marketplace import fixture_connector, import_listings
+
+                    print(
+                        json.dumps({"imported": len(import_listings(session, fixture_connector()))})
+                    )
+                elif args.command == "demo":
                     for stage in (
                         ["entry", "mark", "exit"] if args.stage == "full" else [args.stage]
                     ):

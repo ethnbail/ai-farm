@@ -27,9 +27,23 @@ for agent in agents:
     assert "equity" in get(f"/api/agents/{agent['id']}/performance")
 assert get("/api/market/status")["paper_only"] is True
 assert isinstance(get("/api/activity"), list)
-print(
-    "Health, PostgreSQL, Redis, agents, portfolios, positions, performance, trades, and activity: OK"
-)
+assert get("/api/market/regime")["regime"] in {
+    "BULL_TREND",
+    "BEAR_TREND",
+    "RANGE_BOUND",
+    "HIGH_VOLATILITY",
+    "LOW_VOLATILITY",
+    "RISK_OFF",
+    "UNKNOWN",
+}
+assert "effective_provider" in get("/api/market/provider-status")
+assert "daily_spend" in get("/api/ai/usage")
+assert "mode" in get("/api/ai/status")
+assert isinstance(get("/api/research"), list)
+assert isinstance(get("/api/marketplace/opportunities"), list)
+for agent in agents:
+    assert "watchlist" in get(f"/api/agents/{agent['id']}/intelligence")
+print("Health, PostgreSQL, Redis, agents, paper trading, intelligence and Marketplace APIs: OK")
 
 with urlopen(f"{args.api}/api/events", timeout=10) as response:
     assert response.headers.get_content_type() == "text/event-stream"

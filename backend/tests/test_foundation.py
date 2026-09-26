@@ -164,6 +164,21 @@ def test_migration_round_trip_and_model_parity(database):
         "benchmarks",
         "market_state",
         "event_counter",
+        "ai_budget_guard",
+        "ai_usage_records",
+        "event_risks",
+        "market_regime_snapshots",
+        "marketplace_listings",
+        "marketplace_analyses",
+        "marketplace_outcomes",
+        "provider_status",
+        "opportunity_candidates",
+        "opportunity_queue",
+        "ai_analyses",
+        "shadow_reviews",
+        "watchlists",
+        "watchlist_symbols",
+        "confidence_records",
     }
     command.check(config)
     command.downgrade(config, "base")

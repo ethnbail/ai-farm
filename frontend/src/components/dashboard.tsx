@@ -1,12 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import {
+  AIUsagePanel,
+  IntelligencePanel,
+  MarketplaceIntelligence,
+} from "@/components/intelligence";
 import { Badge, ConnectionNotice, Icon, Metric } from "@/components/ui";
 import { MarketBanner, RecentActivity } from "@/components/trading";
 import { useLiveEvents } from "@/hooks/use-live-events";
 import { useResource } from "@/hooks/use-resource";
 import { money, percent } from "@/lib/format";
-import type { Agent, AIUsage, Health, Marketplace } from "@/lib/types";
+import type { Agent, Health, Marketplace } from "@/lib/types";
 
 function AgentCard({ agent }: { agent: Agent }) {
   const equities = agent.agent_type === "equities";
@@ -149,32 +154,6 @@ function SystemCard() {
   );
 }
 
-function AIUsageCard() {
-  const { data, error } = useResource<AIUsage>("/api/ai-usage");
-  return (
-    <section className="panel" aria-labelledby="ai-title">
-      <div className="flex items-center justify-between">
-        <h2 id="ai-title" className="text-xl font-semibold">
-          AI Usage
-        </h2>
-        <Badge>Disabled</Badge>
-      </div>
-      <dl className="mt-6 grid grid-cols-3 gap-3">
-        <Metric
-          label="Monthly budget"
-          value={money(data?.monthly_budget_usd)}
-        />
-        <Metric label="Amount used" value={money(data?.amount_used_usd)} />
-        <Metric label="Model calls" value={data?.model_calls ?? "—"} />
-      </dl>
-      <ConnectionNotice error={error} />
-      <p className="mt-6 text-xs text-muted">
-        Usage tracking is not configured. No AI calls are enabled.
-      </p>
-    </section>
-  );
-}
-
 export function Dashboard() {
   const { data: agents, error } = useResource<Agent[]>("/api/agents");
   return (
@@ -223,8 +202,10 @@ export function Dashboard() {
       </div>
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.3fr_1fr]">
         <SystemCard />
-        <AIUsageCard />
+        <AIUsagePanel />
       </div>
+      <IntelligencePanel />
+      <MarketplaceIntelligence />
       <RecentActivity />
       <div className="mt-8 flex items-start gap-3 rounded-2xl border border-line px-5 py-4 text-sm text-muted">
         <Icon className="shrink-0 text-green" />

@@ -1,4 +1,21 @@
 from app.models.entities import Agent, MarketplaceOpportunity, SystemEvent, Trade
+from app.models.intelligence import (  # noqa: F401
+    AIAnalysis,
+    AIUsageRecord,
+    BudgetGuard,
+    ConfidenceRecord,
+    EventRisk,
+    MarketplaceAnalysis,
+    MarketplaceListing,
+    MarketplaceOutcome,
+    MarketRegimeSnapshot,
+    OpportunityCandidate,
+    OpportunityQueueItem,
+    ProviderStatus,
+    ShadowReview,
+    Watchlist,
+    WatchlistSymbol,
+)
 from app.models.trading import (
     Benchmark,
     EventCounter,

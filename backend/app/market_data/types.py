@@ -7,11 +7,21 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 class Bar(BaseModel):
     timestamp: datetime
-    open: Decimal
-    high: Decimal
-    low: Decimal
-    close: Decimal
-    volume: int
+    open: Decimal = Field(gt=0, allow_inf_nan=False)
+    high: Decimal = Field(gt=0, allow_inf_nan=False)
+    low: Decimal = Field(gt=0, allow_inf_nan=False)
+    close: Decimal = Field(gt=0, allow_inf_nan=False)
+    volume: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def valid_bar(self):
+        if (
+            self.timestamp.tzinfo is None
+            or self.low > min(self.open, self.close)
+            or self.high < max(self.open, self.close)
+        ):
+            raise ValueError("Bars require aware timestamps and valid OHLC ranges")
+        return self
 
 
 class Quote(BaseModel):
@@ -26,22 +36,25 @@ class Quote(BaseModel):
     timestamp: datetime
     mode: Literal["mock", "live"]
     underlying_symbol: str | None = None
-    underlying_price: Decimal | None = None
+    underlying_price: Decimal | None = Field(default=None, ge=0, allow_inf_nan=False)
     option_type: Literal["CALL", "PUT"] | None = None
-    strike: Decimal | None = None
+    strike: Decimal | None = Field(default=None, gt=0, allow_inf_nan=False)
     expiration: date | None = None
     contract_multiplier: int = Field(default=1, ge=1)
-    iv: Decimal | None = None
-    delta: Decimal | None = None
-    gamma: Decimal | None = None
-    theta: Decimal | None = None
-    vega: Decimal | None = None
+    iv: Decimal | None = Field(default=None, ge=0, allow_inf_nan=False)
+    delta: Decimal | None = Field(default=None, ge=-1, le=1, allow_inf_nan=False)
+    gamma: Decimal | None = Field(default=None, ge=0, allow_inf_nan=False)
+    theta: Decimal | None = Field(default=None, allow_inf_nan=False)
+    vega: Decimal | None = Field(default=None, ge=0, allow_inf_nan=False)
     open_interest: int = Field(default=0, ge=0)
+    greeks_timestamp: datetime | None = None
 
     @model_validator(mode="after")
     def valid_quote(self):
         if self.timestamp.tzinfo is None or self.ask < self.bid:
             raise ValueError("Quotes require aware timestamps and non-crossed bid/ask")
+        if self.greeks_timestamp is not None and self.greeks_timestamp.tzinfo is None:
+            raise ValueError("Greek timestamps must be timezone aware")
         if self.asset_type == "option":
             if (
                 not self.underlying_symbol
@@ -92,6 +105,40 @@ class MarketDataProvider(EquityMarketDataProvider, OptionsMarketDataProvider, Pr
 
 class DataUnavailable(ValueError):
     pass
+
+
+class HistoricalSeries(BaseModel):
+    symbol: str
+    bars: list[Bar]
+    interval: str = "daily"
+    data_mode: str
+    timestamp: datetime
+
+
+class OptionContract(Quote):
+    asset_type: Literal["option"] = "option"
+
+
+class OptionChain(BaseModel):
+    underlying: str
+    contracts: list[OptionContract]
+    timestamp: datetime
+    data_mode: str
+
+
+class MarketSnapshot(BaseModel):
+    quote: Quote
+    features: dict[str, str | int | None]
+    data_state: str
+    timestamp: datetime
+
+
+class MarketStatus(BaseModel):
+    provider: str
+    effective_provider: str
+    state: str
+    message: str
+    timestamp: datetime | None = None
 
 
 def effective_state(state: str, stamp: datetime | None, now: datetime, max_age: int) -> str:

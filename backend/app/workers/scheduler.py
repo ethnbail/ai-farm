@@ -30,6 +30,8 @@ def run_pending(redis, settings, now):
             ("options", settings.options_scan_interval_seconds),
         ]
         for job, interval in jobs:
+            if not lock.owned():
+                return
             key = f"ai-farm:paper-next:{job}"
             if float(redis.get(key) or 0) > now.timestamp():
                 continue
@@ -47,7 +49,19 @@ def run_pending(redis, settings, now):
                 else:
                     for agent in agents:
                         if agent.agent_type == job:
-                            scan_agent(session, settings, agent.id, now)
+                            if settings.intelligence_enabled:
+                                from app.workers.intelligence import run_intelligence
+
+                                run_intelligence(
+                                    session,
+                                    settings,
+                                    agent.id,
+                                    now,
+                                    execute=True,
+                                    execution_guard=lock.owned,
+                                )
+                            else:
+                                scan_agent(session, settings, agent.id, now)
             redis.set(key, now.timestamp() + interval)
     finally:
         if lock.owned():

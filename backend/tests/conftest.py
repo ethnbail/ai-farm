@@ -16,6 +16,8 @@ def database(monkeypatch, tmp_path):
     monkeypatch.setenv("DATABASE_URL", f"sqlite:///{tmp_path / 'test.db'}")
     monkeypatch.setenv("AGENT_A_STARTING_BALANCE", "1000.00")
     monkeypatch.setenv("AGENT_B_STARTING_BALANCE", "1000.00")
+    monkeypatch.setenv("AI_ENABLED", "false")
+    monkeypatch.setenv("MARKET_DATA_PROVIDER", "mock")
     get_settings.cache_clear()
     get_engine.cache_clear()
     config = Config(str(Path(__file__).resolve().parents[1] / "alembic.ini"))

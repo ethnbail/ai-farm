@@ -1,7 +1,7 @@
 """The only execution implementation: transactional, long-only simulated accounting."""
 
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -74,6 +74,8 @@ class PaperBroker:
             )
             if portfolio is None:
                 raise ValueError("Portfolio not found; seed development accounts first")
+            if getattr(self.provider, "wall_clock", False):
+                self.now = datetime.now(UTC)
             old = session.scalar(
                 select(Order).where(
                     Order.portfolio_id == portfolio.id,
@@ -342,6 +344,8 @@ class PaperBroker:
         if quote.bid <= 0 and not settlement:
             raise RiskRejected("liquidity", "No executable bid; position remains open")
         trade = self.session.get(Trade, position.trade_id)
+        if trade.market_data_mode and trade.market_data_mode != quote.mode:
+            raise RiskRejected("data_mode", "Cannot close a position using a different data mode")
         fill_price = (
             price(quote.bid) if settlement else simulated_price(quote, False, self.settings)
         )
@@ -458,7 +462,7 @@ class PaperBroker:
             {"agent_id": str(agent_id), "message": "Paper positions marked"},
         )
         self.session.commit()
-        return [
+        results = [
             self.execute(
                 OrderRequest(
                     agent_id=agent_id,
@@ -473,3 +477,7 @@ class PaperBroker:
             )
             for pid, symbol, asset, reason in triggers
         ]
+        from app.workers.intelligence import sync_confidence
+
+        sync_confidence(self.session)
+        return results

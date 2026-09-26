@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { IntelligencePanel } from "@/components/intelligence";
 import { Badge, ConnectionNotice, Metric } from "@/components/ui";
 import {
   amount,
@@ -83,6 +84,7 @@ export function AgentDetail({ id }: { id: string }) {
             </p>
           </section>
           <Positions id={id} />
+          <IntelligencePanel agentId={id} />
           <TradeHistory id={id} />
           <section
             className="panel mt-5"
@@ -126,6 +128,18 @@ export function AgentDetail({ id }: { id: string }) {
                 }
                 value={rate(m?.benchmark?.total_return_percent)}
               />
+              <Metric
+                label="Matching-period portfolio return"
+                value={rate(m?.benchmark_comparison?.portfolio_return)}
+              />
+              <Metric
+                label="Excess return vs SPY"
+                value={rate(m?.benchmark_comparison?.excess_return)}
+              />
+              <Metric
+                label="Observed SPY drawdown"
+                value={rate(m?.benchmark_comparison?.benchmark_max_drawdown)}
+              />
             </dl>
             <p className="mt-5 text-xs text-muted">
               Benchmark:{" "}
@@ -133,6 +147,7 @@ export function AgentDetail({ id }: { id: string }) {
               SPY starts at the first observed quote, not an invented price
               history. Sharpe/Sortino need a suitable return series. Fixture
               results are not evidence of profitability.
+              {m?.benchmark_comparison?.note}
             </p>
           </section>
         </>

@@ -13,7 +13,7 @@ class MockMarketDataProvider:
         self.tick, self.scenario, self.now = tick, scenario, now
 
     def equity_quote(self, symbol: str) -> Quote:
-        bases = {"NVDA": D("100"), "SPY": D("550"), "FARM": D("3")}
+        bases = {"NVDA": D("100"), "SPY": D("550"), "QQQ": D("450"), "FARM": D("3")}
         if symbol not in bases:
             raise DataUnavailable(f"No mock equity fixture for {symbol}")
         # Fixed paths support both gains and losses. They never claim profitability.
@@ -26,7 +26,7 @@ class MockMarketDataProvider:
         return Quote(
             symbol=symbol,
             company_name=f"{symbol} (synthetic fixture)",
-            asset_type="etf" if symbol == "SPY" else "equity",
+            asset_type="etf" if symbol in {"SPY", "QQQ"} else "equity",
             bid=mid - D(".01"),
             ask=mid + D(".01"),
             last=mid,
@@ -100,6 +100,7 @@ class MockMarketDataProvider:
             theta=D("-.005"),
             vega=D(".03"),
             open_interest=1000,
+            greeks_timestamp=self.now,
         )
 
     def quote(self, symbol: str, asset_type: str) -> Quote:

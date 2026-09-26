@@ -1,8 +1,10 @@
 # AI Farm
 
-Phase 2 adds a deterministic **paper-trading engine** to the working Phase 1 dashboard. Agent A trades long equities/ETFs; Agent B trades long calls/puts. Each has its own portfolio, cash, positions, risk limits, and performance statistics. The dashboard shows positions, recorded trade replay, and durable SSE activity.
+Phase 3 adds an explainable intelligence layer to the existing deterministic paper engine: market regimes, ranked research, optional budgeted AI, Shadow critique, watchlists and manual Marketplace estimates. Agent A trades long equities/ETFs; Agent B trades long calls/puts. Each retains its independent portfolio, risk limits, accounting and replay. The existing RiskEngine and PaperBroker remain the only execution path.
 
-All prices and Greeks are explicitly MOCK fixtures. There is no real broker, real-money executor, external market-data request, marketplace scraping, AI call, or 3D world. Agent A and Agent B start idle with $1,000 each. Seeding never creates trades or resets balances. The worker is opt-in; risk rejection and NO_TRADE are expected outcomes.
+Defaults are explicitly MOCK market data, disabled AI and disabled workers. A read-only Tradier adapter and optional OpenAI structured analysis can be configured backend-side; neither was called with real credentials during verification. There is no real broker, marketplace scraping/messaging/purchasing, or 3D world. Agent A and Agent B start idle with $1,000 each. Seeding never creates trades or resets balances. NO_TRADE is a valid outcome.
+
+Start with [Phase 3 architecture and scan commands](docs/phase3-intelligence.md), [verification and exact local startup](docs/phase3-verification.md), and the [complete changed-file inventory](docs/phase3-files.md). Phase 1/2 documents are historical references unless specifically updated.
 
 ## Quick start: the whole stack in Docker
 
@@ -114,7 +116,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Alternatively, with Google Chrome installed: `PLAYWRIGHT_CHANNEL=chrome npm run test:e2e`. The first three tests expect default $1,000 balances and no trades and make no backend changes. A fourth, opt-in lifecycle test **writes paper trades** to the backend selected by `DATABASE_URL`; use a disposable database and run `PAPER_E2E=1 PLAYWRIGHT_CHANNEL=chrome npm run test:e2e -- --workers=1`. The running API and the test's backend CLI must use the same database. The test disables polling to prove SSE refresh, and requires `backend/.venv/bin/python` plus Redis. A second run needs another fresh database; tests never reset your data.
+Alternatively, with Google Chrome installed: `PLAYWRIGHT_CHANNEL=chrome npm run test:e2e`. The suite expects freshly seeded $1,000 accounts, no trades and no research. Two opt-in tests write paper trades, research and Marketplace fixtures: use a disposable database and run `PAPER_E2E=1 PLAYWRIGHT_CHANNEL=chrome npm run test:e2e -- --workers=1`. The running API and CLI must use the same database. Tests disable polling to prove SSE refresh, and require `backend/.venv/bin/python` plus Redis. A second run needs a new database; tests never reset data. Provider failure and AI-disabled states are also covered.
 
 From the root, `python3 infra/smoke.py` verifies HTTP health, real PostgreSQL/Redis connectivity, both agents, detail/trade endpoints, and one SSE heartbeat. To inspect the stream directly:
 
@@ -128,13 +130,13 @@ curl -N http://localhost:8000/api/events
 frontend/       Next.js App Router, TypeScript, Tailwind, browser integration tests
 backend/
   app/
-    api/        Read-only routes and SSE transport
+    api/        Read APIs, gated local watchlist writes, SSE transport
     core/       Validated backend-only settings
     database/   SQLAlchemy sessions and explicit development seeding
     models/     Agents, portfolios, orders, fills, positions, trades, events, benchmarks
     schemas/    Pydantic response and event contracts
-    services/   Final risk authority, paper broker, accounting, metrics, durable events
-    market_data/ Provider protocols, normalized quotes, deterministic mock fixtures
+    services/   Research, AI/budgets, Shadow, events, Marketplace, risk, accounting
+    market_data/ Normalized providers, read-only Tradier, deterministic mock fixtures
     agents/     Transparent equity/options strategy proposals
     workers/    Redis-coordinated scheduler and explicit development demo CLI
   migrations/   Versioned Alembic schema
@@ -184,16 +186,16 @@ Do not run a native worker and the Compose worker together. The worker uses dete
 
 - `.env` and local artifacts are ignored. `.env.example` contains placeholders only.
 - Starting balances are configured with `AGENT_A_STARTING_BALANCE` and `AGENT_B_STARTING_BALANCE` before first seeding. Reseeding never overwrites existing agents.
-- New Phase 2 settings have safe defaults; existing `.env` files need not be overwritten. See `.env.example` for the complete controls. `TRADING_MODE` other than `paper` fails closed. `MARKET_DATA_PROVIDER` other than `mock` is unavailable until an adapter is implemented.
+- Existing `.env` files need not be overwritten. See `.env.example` for controls. `TRADING_MODE` other than `paper` fails closed. `MARKET_DATA_PROVIDER` accepts `mock` or `tradier`; missing Tradier credentials explicitly use MOCK. A configured provider failure blocks new trades, never silently substitutes fake live prices.
 - `CORS_ORIGINS` is a JSON array of allowed origins. Defaults cover localhost and 127.0.0.1 on port 3000. Wildcard origins are rejected.
-- `OPENAI_API_KEY`, `MARKET_DATA_API_KEY`, and `DISCORD_WEBHOOK_URL` are backend-only, optional, and unused. `AI_MONTHLY_BUDGET_USD` may be blank; the UI shows an unconfigured budget and usage placeholders.
+- Keys remain backend-only. AI requires explicit enablement, key, priced model slots and both budgets. Blank budgets allow no paid calls. Disabled AI continues deterministic research with zero usage. Read [AI budget enforcement](docs/ai-budget.md) before enabling; model prices must be verified. Discord remains unused.
 - `/health` returns 200 when both database and Redis checks pass, or 503 with explicit component statuses. The heartbeat only proves stream connectivity; it does not claim the agents are running or the database is healthy.
 - All Compose ports bind to loopback. There is no authentication yet: this stack is for a trusted local development machine, not public deployment.
 
 ## Deferred work
 
-Real execution, live market-data adapters, sophisticated option pricing, full historical chart replay, marketplace collection/scoring, editable ZIP/radius, AI reasoning/metering, authentication, and the 3D farm remain future work. Commissions, taxes, corporate actions, exchange depth, physical option exercise/delivery, and assignment are not modeled. Options expire via documented synthetic cash settlement. Empty history before the first demo, inactive marketplace, and disabled AI usage are intentional.
+Real execution, verified live calendar integration, sophisticated option pricing, full historical replay, automatic marketplace collection, editable ZIP/radius, authentication, adaptive training and the 3D farm remain future work. Commissions, taxes, corporate actions, exchange depth, physical exercise/delivery and assignment are not modeled. Options expire via documented synthetic cash settlement. Marketplace price ranges are supplied estimates; sale time/probability and statistically unsupported reliability stay N/A. Data and AI adapters still need credentialed integration verification. Docker build/boot is pending where an engine is available.
 
 The same service boundaries can run on a Proxmox Linux VM. Before remote deployment, use production process commands, production images without development mounts/reload, a TLS reverse proxy with SSE buffering disabled, authentication, managed secrets, backups, monitoring, and explicit remote CORS/API origins. Those deployment changes are not implemented in Phase 1.
 
-Suggested commit message: `feat: add Phase 2 deterministic paper-trading engine`
+Suggested commit message: `feat: add Phase 3 paper-only intelligence and research layer`

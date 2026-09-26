@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.market_data.types import DataUnavailable, MarketDataProvider
-from app.models import Agent, Benchmark, PerformanceSnapshot, Portfolio, Position
+from app.models import Agent, Benchmark, PerformanceSnapshot, Portfolio, Position, Trade
 from app.services.market_hours import NEW_YORK
 
 ZERO = Decimal("0")
@@ -96,6 +96,9 @@ def mark_portfolio(
     for position in open_positions(session, portfolio):
         try:
             quote = provider.quote(position.symbol, position.asset_type)
+            trade = session.get(Trade, position.trade_id)
+            if trade.market_data_mode and trade.market_data_mode != quote.mode:
+                raise DataUnavailable("Cannot revalue a position with a different data source mode")
             state = quote.data_state(now, max_age)
             position.data_state = state
             if state == "stale":
@@ -156,8 +159,23 @@ def update_benchmark(session, portfolio, provider, now, max_age):
     if agent.agent_type == "equities":
         try:
             quote = provider.equity_quote("SPY")
+            if benchmark.source_mode and benchmark.source_mode != quote.mode:
+                raise DataUnavailable("Benchmark source-mode changed; matching period unavailable")
             benchmark.data_state = quote.data_state(now, max_age)
             if benchmark.data_state != "stale" and quote.last > 0:
+                if benchmark.starting_price is None:
+                    benchmark.started_at, benchmark.portfolio_equity_at_start = (
+                        now,
+                        portfolio.equity,
+                    )
+                benchmark.source_mode = benchmark.source_mode or quote.mode
+                benchmark.high_water_price = max(
+                    benchmark.high_water_price or quote.last, quote.last
+                )
+                benchmark.max_drawdown_percent = max(
+                    benchmark.max_drawdown_percent or ZERO,
+                    percent(benchmark.high_water_price - quote.last, benchmark.high_water_price),
+                )
                 benchmark.starting_price = benchmark.starting_price or quote.last
                 benchmark.current_price = quote.last
                 benchmark.equity = money(

@@ -160,6 +160,11 @@ class Benchmark(Base):
     total_return_percent: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
     data_state: Mapped[str] = mapped_column(String(20), default="unavailable")
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    source_mode: Mapped[str | None] = mapped_column(String(20))
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    portfolio_equity_at_start: Mapped[Decimal | None] = mapped_column(Numeric(18, 2))
+    high_water_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4))
+    max_drawdown_percent: Mapped[Decimal | None] = mapped_column(Numeric(14, 4))
 
 
 class MarketState(Base):

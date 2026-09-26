@@ -88,6 +88,8 @@ services:
       dockerfile: ../infra/frontend.Dockerfile
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      NEXT_PUBLIC_ENABLE_3D_FARM: ${NEXT_PUBLIC_ENABLE_3D_FARM:-true}
+      NEXT_PUBLIC_REDUCED_SCENE: ${NEXT_PUBLIC_REDUCED_SCENE:-false}
       NEXT_TELEMETRY_DISABLED: "1"
     command: ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
     ports:

@@ -1,10 +1,12 @@
 # AI Farm
 
-Phase 3 adds an explainable intelligence layer to the existing deterministic paper engine: market regimes, ranked research, optional budgeted AI, Shadow critique, watchlists and manual Marketplace estimates. Agent A trades long equities/ETFs; Agent B trades long calls/puts. Each retains its independent portfolio, risk limits, accounting and replay. The existing RiskEngine and PaperBroker remain the only execution path.
+Phase 4 adds a live, original low-poly 3D farm to the existing paper-trading and intelligence system. Seven buildings and five animal mascots visualize backend state through one shared SSE connection. Click a building or its keyboard-accessible button for live details. The complete Phase 3 dashboard remains available through **Switch to 2D**, reduced motion, WebGL failure, or performance fallback. Agent A trades long equities/ETFs; Agent B trades long calls/puts. Their accounts remain independent; the existing RiskEngine and PaperBroker are unchanged.
 
-Defaults are explicitly MOCK market data, disabled AI and disabled workers. A read-only Tradier adapter and optional OpenAI structured analysis can be configured backend-side; neither was called with real credentials during verification. There is no real broker, marketplace scraping/messaging/purchasing, or 3D world. Agent A and Agent B start idle with $1,000 each. Seeding never creates trades or resets balances. NO_TRADE is a valid outcome.
+Defaults are explicitly MOCK market data, disabled AI and disabled workers. A read-only Tradier adapter and optional OpenAI structured analysis can be configured backend-side; neither was called with real credentials during verification. There is no real broker or marketplace scraping/messaging/purchasing. Animations make no AI calls and cannot submit orders. Agent A and Agent B start idle with $1,000 each. Seeding never creates trades or resets balances. NO_TRADE is a valid outcome.
 
-Start with [Phase 3 architecture and scan commands](docs/phase3-intelligence.md), [verification and exact local startup](docs/phase3-verification.md), and the [complete changed-file inventory](docs/phase3-files.md). Phase 1/2 documents are historical references unless specifically updated.
+Start with [Phase 4 architecture and simulator](docs/phase4-3d-farm.md), [verification and exact local startup](docs/phase4-verification.md), and the [complete Phase 4 file inventory](docs/phase4-files.md). [Phase 3 intelligence](docs/phase3-intelligence.md) remains the backend reference; earlier verification documents describe their historical runs.
+
+Public frontend settings: `NEXT_PUBLIC_ENABLE_3D_FARM=true` and `NEXT_PUBLIC_REDUCED_SCENE=false`. Set these in `frontend/.env.local` for native development or the root `.env` for Compose. Rebuild production after changing public settings. The **Reduced motion** checkbox and OS preference select the complete 2D experience. Run `npm run dev`, open `/`, and expand **DEVELOPMENT ONLY · Farm Event Simulator** to rehearse animations locally without changing balances. The simulator is excluded from production builds.
 
 ## Quick start: the whole stack in Docker
 

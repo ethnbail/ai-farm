@@ -20,9 +20,452 @@ input {
   -webkit-tap-highlight-color: transparent;
 }
 a:focus-visible,
+button:focus-visible,
+select:focus-visible,
 input:focus-visible {
   outline: 3px solid #bd7446;
   outline-offset: 5px;
+}
+
+/* Farm UI is intentionally quiet; renderer state never replaces textual status. */
+.farm-preferences {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #f7f5ecf5;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #d9daca;
+}
+.farm-preferences p {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  font-size: 0.73rem;
+  color: #53624d;
+}
+.farm-preferences strong {
+  letter-spacing: 0.12em;
+}
+.farm-preferences div {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  font-size: 0.75rem;
+}
+.farm-preferences label {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.farm-preferences button,
+.farm-controls button,
+.farm-detail button,
+.farm-ledger button,
+.farm-fallback button,
+.farm-debug button {
+  border: 1px solid #cbd1bd;
+  border-radius: 999px;
+  padding: 0.5rem 0.85rem;
+  background: #fffdf3;
+  color: #41563f;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.farm-preferences button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+.farm-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 2.2rem 0 1.4rem;
+}
+.farm-heading h1 {
+  font-size: clamp(2.3rem, 4vw, 3.7rem);
+  font-weight: 550;
+  letter-spacing: -0.065em;
+  line-height: 1.2;
+  margin-top: 0.3rem;
+}
+.farm-heading > p {
+  color: #687063;
+  font-size: 0.85rem;
+  text-align: right;
+  line-height: 1.7;
+}
+.farm-stage {
+  position: relative;
+  height: 640px;
+  border-radius: 32px;
+  overflow: hidden;
+  background: #e6dfcb;
+  border: 1px solid #d5d5bf;
+  box-shadow: 0 15px 50px -30px #69715a70;
+  isolation: isolate;
+}
+.farm-canvas {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+.farm-hud {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+.farm-hud span {
+  background: #fffdf0e8;
+  color: #455540;
+  border: 1px solid #c4cbb5;
+  border-radius: 999px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.63rem;
+  letter-spacing: 0.035em;
+}
+.farm-hud span:first-child {
+  background: #526c50;
+  color: #fffbea;
+}
+.farm-controls {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  right: 1rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.farm-controls span {
+  font-size: 0.65rem;
+  color: #435540;
+  margin-right: auto;
+  background: #f7f5ece0;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+}
+.farm-label {
+  background: #fffbeeea;
+  border: 1px solid #bfc5ac;
+  box-shadow: 0 3px 12px #3a4e3520;
+  border-radius: 9px;
+  padding: 0.3rem 0.55rem;
+  min-width: 66px;
+  text-align: center;
+  color: #354935;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.farm-label span {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 650;
+}
+.farm-label small {
+  display: block;
+  font-size: 0.48rem;
+  letter-spacing: 0.045em;
+}
+.farm-label.selected {
+  background: #f3d8a3;
+  border-color: #9c7739;
+}
+.farm-caption {
+  font-size: 0.65rem;
+  color: #687063;
+  line-height: 1.7;
+  margin: 0.7rem 0.3rem 1rem;
+}
+.farm-nav {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border: 1px solid #d7dccc;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fffdf5;
+}
+.farm-nav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 1rem 0.3rem;
+  cursor: pointer;
+  border-right: 1px solid #e5e7db;
+}
+.farm-nav button:last-child {
+  border: 0;
+}
+.farm-nav button[aria-pressed="true"] {
+  background: #e8eddd;
+}
+.farm-nav button > span {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+}
+.farm-nav strong {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.farm-nav small {
+  font-size: 0.55rem;
+  letter-spacing: 0.025em;
+}
+.farm-bottom {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+.farm-ledger {
+  min-width: 0;
+  padding: 0.4rem 0.2rem;
+}
+.farm-ledger > a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #dfe2d3;
+  font-size: 0.84rem;
+}
+.farm-ledger small {
+  display: block;
+  font-size: 0.64rem;
+  color: #63705d;
+  margin-top: 0.3rem;
+}
+.farm-ledger > a > strong {
+  font-weight: 550;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.farm-ledger > p:not(.eyebrow) {
+  font-size: 0.8rem;
+  color: #63705d;
+  padding: 1rem 0;
+}
+.farm-ledger ul {
+  padding: 0.5rem 0;
+}
+.farm-ledger li {
+  border-bottom: 1px solid #dfe2d3;
+  padding: 0.7rem 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+.farm-ledger button {
+  margin-top: 0.9rem;
+}
+.farm-detail {
+  position: fixed;
+  z-index: 30;
+  right: max(1.5rem, calc((100vw - 1280px) / 2));
+  top: 16vh;
+  width: min(390px, 90vw);
+  max-height: 76vh;
+  overflow: auto;
+  background: #fffdf5f8;
+  border: 1px solid #c6ceb8;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 15px 70px #3f4c3935;
+  backdrop-filter: blur(12px);
+}
+.farm-detail header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.farm-detail h2 {
+  font-size: 1.6rem;
+  font-weight: 550;
+  letter-spacing: -0.04em;
+}
+.farm-detail h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.farm-detail p {
+  font-size: 0.78rem;
+  line-height: 1.7;
+  margin: 0.6rem 0;
+}
+.farm-detail article {
+  border-top: 1px solid #dfe2d3;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+.farm-detail a {
+  color: #46613e;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.farm-state {
+  letter-spacing: 0.12em;
+  font-size: 0.65rem !important;
+  color: #526c50;
+}
+.farm-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.farm-facts dt {
+  font-size: 0.63rem;
+  color: #63705d;
+}
+.farm-facts dd {
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+  overflow-wrap: anywhere;
+}
+.farm-loading {
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  font-size: 1.8rem;
+  letter-spacing: 0.17em;
+  color: #52674a;
+  background: #e9e4d2;
+  border-radius: 24px;
+}
+.farm-loading span {
+  font-size: 0.8rem;
+  letter-spacing: normal;
+  margin-top: 0.8rem;
+}
+.farm-fallback {
+  padding: 1rem 0 2rem;
+  font-size: 0.8rem;
+  color: #63705d;
+}
+.farm-fallback button {
+  margin-left: 1rem;
+}
+.farm-rehearsal {
+  position: absolute;
+  bottom: 4rem;
+  left: 1rem;
+  z-index: 10;
+  max-width: 90%;
+  background: #f1d298;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+}
+.farm-debug {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px dashed #ad9058;
+  font-size: 0.75rem;
+}
+.farm-debug > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.farm-debug pre {
+  overflow: auto;
+}
+@media (max-width: 700px) {
+  .farm-heading > p {
+    display: none;
+  }
+  .farm-heading {
+    margin: 1.3rem 0;
+  }
+  .farm-stage {
+    height: 490px;
+    border-radius: 20px;
+    margin: 0 -0.7rem;
+  }
+  .farm-hud {
+    gap: 0.3rem;
+    top: 0.7rem;
+    left: 0.7rem;
+    right: 0.7rem;
+  }
+  .farm-hud span {
+    font-size: 0.53rem;
+    padding: 0.3rem 0.5rem;
+  }
+  .farm-controls {
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.7rem;
+    gap: 0.3rem;
+  }
+  .farm-controls span {
+    display: none;
+  }
+  .farm-controls button {
+    font-size: 0.65rem;
+    padding: 0.4rem 0.6rem;
+  }
+  .farm-nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .farm-nav button {
+    padding: 0.7rem 0.2rem;
+    border-bottom: 1px solid #e5e7db;
+  }
+  .farm-bottom {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .farm-detail {
+    top: auto;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    max-height: 55dvh;
+    border-radius: 24px 24px 0 0;
+  }
+  .farm-preferences p {
+    gap: 0.3rem;
+    flex-direction: column;
+    font-size: 0.62rem;
+  }
+  .farm-preferences div {
+    font-size: 0.65rem;
+    gap: 0.6rem;
+  }
+  .farm-preferences {
+    gap: 0.5rem;
+  }
+  .farm-label {
+    min-width: 49px;
+    padding: 0.22rem 0.32rem;
+  }
+  .farm-label span {
+    font-size: 0.53rem;
+  }
+  .farm-label small {
+    font-size: 0.4rem;
+  }
 }
 ::selection {
   background: #dce6cd;
@@ -88,4 +531,12 @@ input:focus-visible {
     transition: none !important;
     animation: none !important;
   }
+}
+.farm-label-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.farm-label-layer button {
+  pointer-events: auto;
 }

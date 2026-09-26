@@ -1,5 +1,5 @@
-import { Dashboard } from "@/components/dashboard";
+import { FarmExperience } from "@/components/farm/farm-experience";
 
 export default function Home() {
-  return <Dashboard />;
+  return <FarmExperience />;
 }

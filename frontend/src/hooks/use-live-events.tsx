@@ -3,30 +3,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
 import type { LiveEvent } from "@/lib/types";
+import { eventTypes, parseEvent } from "@/lib/farm-state";
 
 const LiveContext = createContext({
   status: "Connecting",
   lastHeartbeat: null as string | null,
 });
-const businessEvents = [
-  "trade_opened",
-  "trade_closed",
-  "stop_loss_triggered",
-  "take_profit_triggered",
-  "portfolio_updated",
-  "agent_status_changed",
-  "risk_trade_rejected",
-  "position_reduced",
-  "market_regime_changed",
-  "opportunity_discovered",
-  "opportunity_shortlisted",
-  "ai_analysis_completed",
-  "ai_budget_warning",
-  "shadow_review_completed",
-  "market_data_stale",
-  "market_data_restored",
-  "marketplace_opportunity_created",
-];
 
 // One connection across route transitions. EventSource resumes business events by ID.
 export function LiveEventsProvider({
@@ -50,8 +32,17 @@ export function LiveEventsProvider({
         setStatus("Invalid event");
       }
     });
-    const refresh = () => window.dispatchEvent(new Event("ai-farm:update"));
-    for (const event of businessEvents) source.addEventListener(event, refresh);
+    const seen = new Set<string>();
+    const refresh = (message: MessageEvent<string>) => {
+      const event = parseEvent(message.data);
+      if (!event || seen.has(event.id)) return;
+      seen.add(event.id);
+      if (seen.size > 512) seen.delete(seen.values().next().value!);
+      window.dispatchEvent(new CustomEvent("ai-farm:event", { detail: event }));
+      window.dispatchEvent(new Event("ai-farm:update"));
+    };
+    for (const event of eventTypes.filter((e) => e !== "heartbeat"))
+      source.addEventListener(event, refresh);
     source.onerror = () => setStatus("Reconnecting");
     const timer = setInterval(() => {
       if (Date.now() - receivedAt > 90_000) setStatus("Waiting for heartbeat");

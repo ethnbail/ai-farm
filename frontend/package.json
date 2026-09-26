@@ -12,13 +12,17 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test:e2e": "playwright test",
+    "test:unit": "node --experimental-strip-types --test tests/farm-state.test.mjs",
     "format": "prettier --write src tests '*.ts' '*.mjs' package.json tsconfig.json",
     "format:check": "prettier --check src tests '*.ts' '*.mjs' package.json tsconfig.json"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
     "next": "^16.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.0",
@@ -26,6 +30,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.186.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.0",
     "prettier": "^3.9.9",

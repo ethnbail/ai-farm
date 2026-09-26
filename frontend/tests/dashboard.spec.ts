@@ -2,6 +2,11 @@ import { expect, test } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 
+// Preserve Phase 1–3 regression coverage against the unchanged 2D dashboard.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("ai-farm:3d", "false"));
+});
+
 test("Phase 3 defaults expose regime and disabled AI without invented spend", async ({
   page,
 }) => {

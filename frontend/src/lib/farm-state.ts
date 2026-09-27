@@ -89,6 +89,15 @@ export const eventTypes = [
   "position_reduced",
   "agent_status_changed",
   "marketplace_opportunity_created",
+  "marketplace_listing_imported",
+  "marketplace_strong_candidate",
+  "marketplace_price_drop",
+  "marketplace_duplicate_detected",
+  "marketplace_listing_passed",
+  "marketplace_item_bought",
+  "marketplace_item_sold",
+  "marketplace_inventory_aging",
+  "marketplace_analysis_updated",
   "marketplace_deal_found",
   "price_drop_detected",
   "market_data_stale",
@@ -202,9 +211,26 @@ export function transition(
       set("shadow", "ANALYZING", 8500);
       break;
     case "marketplace_opportunity_created":
+    case "marketplace_listing_imported":
+    case "marketplace_strong_candidate":
+    case "marketplace_price_drop":
+    case "marketplace_analysis_updated":
     case "marketplace_deal_found":
     case "price_drop_detected":
       set("marketplace", "ANALYZING");
+      break;
+    case "marketplace_item_bought":
+      set("marketplace", "TRADE_ACTIVE");
+      break;
+    case "marketplace_item_sold":
+      set("marketplace", "SUCCESS");
+      break;
+    case "marketplace_listing_passed":
+      set("marketplace", "IDLE");
+      break;
+    case "marketplace_inventory_aging":
+    case "marketplace_duplicate_detected":
+      set("marketplace", "WAITING");
       break;
     case "market_data_stale":
       for (const area of target

@@ -301,7 +301,16 @@ function FarmWorld({ onFailure }: { onFailure: (reason: string) => void }) {
               onFailure={onFailure}
               onReady={onReady}
               onMetrics={onMetrics}
-              packages={Boolean(listings?.length)}
+              packages={Boolean(
+                listings?.some(
+                  (l) =>
+                    l.active !== false &&
+                    !["PASSED", "SOLD", "REMOVED"].includes(l.status ?? ""),
+                ),
+              )}
+              inventory={Boolean(
+                farm.get<unknown[]>("/api/marketplace/inventory")?.length,
+              )}
             />
           </SceneBoundary>
           <div ref={labelPortal} className="farm-label-layer" />
@@ -542,6 +551,9 @@ function BuildingDetails({ area }: { area: Area }) {
           Packages represent listing research, not purchases. Manual/fixture
           estimates only.
         </p>
+        <Link className="farm-detail-link" href="/marketplace">
+          Open Marketplace workbench →
+        </Link>
         {farm.cache["/api/marketplace/opportunities?limit=100"]?.error && (
           <p role="alert">Listing feed unavailable; last known records.</p>
         )}

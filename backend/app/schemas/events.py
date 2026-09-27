@@ -26,6 +26,15 @@ EventType = Literal[
     "market_data_stale",
     "market_data_restored",
     "marketplace_opportunity_created",
+    "marketplace_listing_imported",
+    "marketplace_strong_candidate",
+    "marketplace_price_drop",
+    "marketplace_duplicate_detected",
+    "marketplace_listing_passed",
+    "marketplace_item_bought",
+    "marketplace_item_sold",
+    "marketplace_inventory_aging",
+    "marketplace_analysis_updated",
 ]
 
 

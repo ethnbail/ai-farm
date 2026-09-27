@@ -540,3 +540,278 @@ input:focus-visible {
 .farm-label-layer button {
   pointer-events: auto;
 }
+.marketplace {
+  max-width: 1200px;
+  margin: auto;
+}
+.mp-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.2rem;
+  font-size: 0.86rem;
+  color: var(--color-green);
+}
+.mp-nav a:hover {
+  text-decoration: underline;
+}
+.mp-heading {
+  margin: 2.5rem 0 1.5rem;
+}
+.mp-heading h1 {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  margin: 0.5rem 0;
+}
+.mp-heading p:last-child {
+  color: var(--color-muted);
+  max-width: 750px;
+}
+.mp-safety {
+  border-left: 3px solid #ad8759;
+  background: #eee7d7;
+  padding: 1rem 1.2rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  border-radius: 0 12px 12px 0;
+  margin-bottom: 1.5rem;
+}
+.mp-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid #d9dccb;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  background: #fffdf4;
+}
+.mp-metrics > div {
+  padding: 1.25rem;
+  border-right: 1px solid #e5e6da;
+  border-bottom: 1px solid #e5e6da;
+}
+.mp-metrics span {
+  display: block;
+  font-size: 0.75rem;
+  color: #596450;
+  margin-bottom: 0.6rem;
+}
+.mp-metrics strong {
+  font-size: 1.3rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.mp-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.marketplace label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 550;
+}
+.marketplace input,
+.marketplace select,
+.marketplace textarea {
+  border: 1px solid #bcc7ae;
+  border-radius: 9px;
+  background: #fffef8;
+  padding: 0.65rem 0.8rem;
+  width: 100%;
+  min-width: 0;
+  font-weight: 400;
+}
+.marketplace textarea {
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.marketplace input:focus-visible,
+.marketplace textarea:focus-visible,
+.marketplace select:focus-visible,
+.marketplace a:focus-visible {
+  outline: 3px solid #6c8559;
+  outline-offset: 3px;
+}
+.marketplace button,
+.mp-button {
+  border: 1px solid #bec8b0;
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  background: #fffef7;
+  display: inline-block;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.marketplace button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.marketplace .primary {
+  color: #fffef5;
+  background: #4f694b;
+  border-color: #4f694b;
+}
+.mp-listings,
+.mp-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.3rem;
+}
+.mp-listing,
+.mp-block {
+  padding: 1.5rem;
+  background: #fffdf6;
+  border: 1px solid #d8ddca;
+  border-radius: 18px;
+  min-width: 0;
+}
+.mp-block {
+  margin: 1.3rem 0;
+}
+.mp-two > .mp-block,
+.mp-listings > .mp-block {
+  margin: 0;
+}
+.mp-listing h2,
+.mp-block h2 {
+  font-weight: 650;
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+}
+.mp-block h3 {
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+}
+.mp-listing-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.7rem;
+  margin-bottom: 1rem;
+  color: #5b694e;
+}
+.mp-badge {
+  background: #e8ecdf;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  padding: 0.25rem 0.5rem;
+  display: inline-block;
+}
+.mp-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem 1.1rem;
+  margin: 1rem 0;
+}
+.mp-facts dt {
+  text-transform: capitalize;
+  color: #647058;
+  font-size: 0.75rem;
+  margin-bottom: 0.3rem;
+}
+.mp-facts dd {
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+.mp-muted,
+.marketplace small {
+  color: #647058;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+.mp-notice {
+  color: #76522c;
+  background: #f3ead6;
+  padding: 0.8rem;
+  border-radius: 10px;
+  margin: 0.8rem 0;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+.mp-form {
+  display: grid;
+  gap: 1.1rem;
+  margin: 1.1rem 0;
+}
+.mp-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.marketplace .mp-check {
+  flex-direction: row;
+  align-items: center;
+  font-weight: 400;
+}
+.mp-check input {
+  width: auto;
+}
+.marketplace details {
+  border-top: 1px solid #e0e3d5;
+  padding: 1rem 0;
+}
+.marketplace summary {
+  cursor: pointer;
+  font-weight: 550;
+}
+.marketplace details p {
+  margin: 0.8rem 0;
+}
+.marketplace table {
+  width: 100%;
+  font-size: 0.82rem;
+  margin: 1rem 0;
+  text-align: left;
+}
+.marketplace th,
+.marketplace td {
+  padding: 0.65rem 0.4rem;
+  border-bottom: 1px solid #e0e3d5;
+}
+.mp-activity li {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #e0e3d5;
+}
+.mp-photos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 1rem 0;
+}
+.mp-photos img {
+  width: 100%;
+  height: 120px;
+  object-fit: contain;
+}
+@media (max-width: 700px) {
+  .mp-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mp-listings,
+  .mp-two,
+  .mp-fields {
+    grid-template-columns: 1fr;
+  }
+  .mp-toolbar > * {
+    flex: 1 1 135px;
+  }
+  .mp-nav {
+    gap: 0.8rem;
+  }
+  .mp-block,
+  .mp-listing {
+    padding: 1rem;
+  }
+  .mp-facts {
+    gap: 0.8rem;
+  }
+  .mp-metrics strong {
+    font-size: 1.1rem;
+  }
+}

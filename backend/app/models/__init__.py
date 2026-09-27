@@ -16,6 +16,17 @@ from app.models.intelligence import (  # noqa: F401
     Watchlist,
     WatchlistSymbol,
 )
+from app.models.marketplace import (  # noqa: F401
+    MarketplaceCalibrationRecord,
+    MarketplaceComparable,
+    MarketplaceDemandSnapshot,
+    MarketplaceDuplicateMatch,
+    MarketplaceInventoryItem,
+    MarketplaceNotification,
+    MarketplacePriceHistory,
+    MarketplaceSellerProfile,
+    MarketplaceSettings,
+)
 from app.models.trading import (
     Benchmark,
     EventCounter,

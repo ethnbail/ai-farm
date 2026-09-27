@@ -1,5 +1,9 @@
 # AI Farm
 
+Phase 5 adds a user-controlled Marketplace workbench at `/marketplace`: manual/URL/CSV/JSON acquisition, observed price history, duplicate detection, transparent resale and sell-through analysis, travel-adjusted economics, purchase/sale recordkeeping, inventory and calibration. No scraping, seller contact, payment or purchasing automation exists. Missing market evidence stays unknown. Marketplace records never spend Agent A/B paper funds.
+
+Start with [Phase 5 architecture and exact startup/demo commands](docs/phase5-marketplace.md), [verification](docs/phase5-verification.md), and [complete changed-file inventory](docs/phase5-files.md). Migration `0004` is additive. HTTP writes require `LOCAL_WRITES_ENABLED=true` and a trusted local Origin; defaults remain read-only. Earlier phase sections below describe the preserved system.
+
 Phase 4 adds a live, original low-poly 3D farm to the existing paper-trading and intelligence system. Seven buildings and five animal mascots visualize backend state through one shared SSE connection. Click a building or its keyboard-accessible button for live details. The complete Phase 3 dashboard remains available through **Switch to 2D**, reduced motion, WebGL failure, or performance fallback. Agent A trades long equities/ETFs; Agent B trades long calls/puts. Their accounts remain independent; the existing RiskEngine and PaperBroker are unchanged.
 
 Defaults are explicitly MOCK market data, disabled AI and disabled workers. A read-only Tradier adapter and optional OpenAI structured analysis can be configured backend-side; neither was called with real credentials during verification. There is no real broker or marketplace scraping/messaging/purchasing. Animations make no AI calls and cannot submit orders. Agent A and Agent B start idle with $1,000 each. Seeding never creates trades or resets balances. NO_TRADE is a valid outcome.

@@ -145,6 +145,18 @@ class MarketplaceListing(Record, Base):
     asking_price: Mapped[Decimal] = mapped_column(Numeric(18, 2))
     direct_url: Mapped[str] = mapped_column(String(2000))
     details: Mapped[dict] = mapped_column(JSON)
+    first_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    listed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(String(20), default="NEW", server_default="NEW")
+    active: Mapped[bool] = mapped_column(default=True, server_default="true")
+    duplicate_of_listing_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("marketplace_listings.id")
+    )
+    first_known_post: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    repost_count: Mapped[int] = mapped_column(default=0, server_default="0")
+    repost_probability: Mapped[Decimal | None] = mapped_column(Numeric(6, 4))
 
 
 class MarketplaceAnalysis(Record, Base):

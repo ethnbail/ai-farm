@@ -83,6 +83,7 @@ interface Props {
   onReady: () => void;
   onMetrics: (metrics: SceneMetrics) => void;
   packages: boolean;
+  inventory: boolean;
   labelPortal: React.RefObject<HTMLDivElement>;
 }
 
@@ -276,10 +277,12 @@ function Building({
             1,
           )
         : 0;
-      priceTag.current.rotation.y =
-        motion?.event === "price_drop_detected"
-          ? Math.sin(progress * Math.PI) * Math.PI
-          : 0;
+      priceTag.current.rotation.y = [
+        "price_drop_detected",
+        "marketplace_price_drop",
+      ].includes(motion?.event ?? "")
+        ? Math.sin(progress * Math.PI) * Math.PI
+        : 0;
     }
     if (gate.current)
       gate.current.rotation.z = THREE.MathUtils.damp(
@@ -460,7 +463,11 @@ function Building({
           <Part
             s={[0.7, 0.45, 0.08]}
             color={
-              motion?.event === "price_drop_detected" ? "#e6bd66" : "#f0e4c5"
+              ["price_drop_detected", "marketplace_price_drop"].includes(
+                motion?.event ?? "",
+              )
+                ? "#e6bd66"
+                : "#f0e4c5"
             }
           />
           <Part p={[0, 0, 0.05]} s={[0.35, 0.05, 0.02]} color="#655d46" />
@@ -558,11 +565,50 @@ function Trees({ reduced }: { reduced: boolean }) {
   );
 }
 
+function MarketParcel({ motion }: { motion: Motions[Area] }) {
+  const parcel = useRef<THREE.Group>(null);
+  useFrame(() => {
+    if (!parcel.current || !motion) return;
+    const t = THREE.MathUtils.clamp(
+      (Date.now() - motion.started) / (motion.until - motion.started),
+      0,
+      1,
+    );
+    const leaving = [
+      "marketplace_listing_passed",
+      "marketplace_item_sold",
+    ].includes(motion.event);
+    const bought = motion.event === "marketplace_item_bought";
+    const moving =
+      leaving || bought || motion.event === "marketplace_opportunity_created";
+    parcel.current.position.set(
+      6 + (bought ? 2.4 * t : moving ? (leaving ? t : 1 - t) * 4 : 1.9),
+      0.7,
+      6 - (bought ? 2.5 * t : 0),
+    );
+    parcel.current.visible = !leaving || t < 0.95;
+  });
+  if (!motion || !motion.event.startsWith("marketplace_")) return null;
+  const color =
+    motion.event === "marketplace_strong_candidate"
+      ? "#e7bc58"
+      : motion.event === "marketplace_inventory_aging"
+        ? "#c18d42"
+        : "#b99564";
+  return (
+    <group ref={parcel} position={[6, 0.7, 6]}>
+      <Part s={[0.8, 0.8, 0.8]} color={color} />
+      <Part s={[0.14, 0.82, 0.82]} color="#ead7ac" />
+    </group>
+  );
+}
+
 function Environment({
   regime,
   simplified,
   packages,
-}: Pick<Props, "regime" | "simplified" | "packages">) {
+  inventory,
+}: Pick<Props, "regime" | "simplified" | "packages" | "inventory">) {
   const blades = useRef<THREE.Group>(null);
   useFrame((_, dt) => {
     if (blades.current)
@@ -658,6 +704,12 @@ function Environment({
         <group position={[8.1, 0.4, 5.1]}>
           <Part s={[0.7, 0.7, 0.7]} color="#b98d56" />
           <Part s={[0.12, 0.72, 0.72]} color="#ecdbaf" />
+        </group>
+      )}
+      {inventory && (
+        <group position={[8.4, 0.45, 3.5]}>
+          <Part s={[1.1, 0.9, 0.8]} color="#9e7e53" />
+          <Part p={[0, 0, 0.42]} s={[0.7, 0.15, 0.04]} color="#eee0b8" />
         </group>
       )}
     </>
@@ -815,7 +867,9 @@ export default function FarmScene(props: Props) {
         regime={props.regime}
         simplified={props.simplified}
         packages={props.packages}
+        inventory={props.inventory}
       />
+      <MarketParcel motion={props.motions.marketplace} />
       {areas.map((area) => (
         <Building
           key={area}

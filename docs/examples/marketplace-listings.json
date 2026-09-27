@@ -1,0 +1,20 @@
+[
+  {
+    "source": "manual",
+    "source_listing_id": "replace-with-source-id",
+    "source_url": "https://example.com/replace-with-listing",
+    "title": "Replace with observed item",
+    "description": "Template only. Replace every example value with evidence.",
+    "asking_price": "80",
+    "category": "furniture",
+    "model": "Replace with exact model",
+    "condition": "used",
+    "zip_code": "94103",
+    "distance_miles": "5",
+    "comps": [],
+    "demand": [],
+    "item_metadata": {},
+    "image_metadata": [],
+    "raw_source_metadata": { "capture_method": "user supplied export" }
+  }
+]

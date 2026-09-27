@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { MarketplaceDetail } from "@/components/intelligence";
+import { MarketplaceListingDetail } from "@/components/marketplace";
 
 export default async function Page({
   params,
@@ -11,5 +11,5 @@ export default async function Page({
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
   )
     notFound();
-  return <MarketplaceDetail key={id} id={id} />;
+  return <MarketplaceListingDetail key={id} id={id} />;
 }

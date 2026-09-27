@@ -368,6 +368,9 @@ export function MarketplaceIntelligence() {
   return (
     <section className="panel mt-5" aria-label="Marketplace intelligence">
       <h2 className="text-xl font-semibold">Marketplace intelligence</h2>
+      <Link className="text-green underline" href="/marketplace">
+        Open Marketplace workbench →
+      </Link>
       <p className="mt-2 text-xs text-muted">
         Manual imports and test fixtures only. No scraping, messaging or
         purchasing.

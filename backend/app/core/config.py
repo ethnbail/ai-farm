@@ -90,6 +90,17 @@ class Settings(BaseSettings):
     event_block_window_minutes: int = Field(default=60, ge=0, le=1440)
     require_event_coverage: bool = False
     marketplace_mode: str = "manual"
+    marketplace_default_zip: str | None = None
+    marketplace_default_radius_miles: int = Field(default=25, ge=1, le=100)
+    marketplace_min_expected_profit: Decimal = Field(default=Decimal(25), ge=0)
+    marketplace_min_roi_percent: Decimal = Field(default=Decimal(20), ge=0, le=100)
+    marketplace_max_pickup_miles: Decimal = Field(default=Decimal(30), ge=0, le=1000)
+    marketplace_max_pickup_time_minutes: int | None = Field(default=None, ge=0, le=1440)
+    marketplace_cost_per_mile: Decimal = Field(default=Decimal(".70"), ge=0)
+    marketplace_fresh_minutes: int = Field(default=60, gt=15, lt=360)
+    marketplace_recent_hours: int = Field(default=24, gt=6, lt=72)
+    marketplace_strong_score_threshold: Decimal = Field(default=Decimal(75), ge=0, le=100)
+    marketplace_ai_enabled: bool = False
     local_writes_enabled: bool = False
 
     @model_validator(mode="after")

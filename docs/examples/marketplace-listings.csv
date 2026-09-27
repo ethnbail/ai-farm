@@ -1,0 +1,2 @@
+source,source_listing_id,source_url,title,description,asking_price,original_price,category,model,condition,location_text,zip_code,distance_miles
+manual,replace-with-source-id,https://example.com/replace-with-listing,Replace with observed item,Supply only permitted observed details,80,100,furniture,Replace with exact model,used,User-provided location,94103,5

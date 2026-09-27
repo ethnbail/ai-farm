@@ -22,6 +22,8 @@ import {
 } from "@/lib/farm-state";
 
 export interface Listing {
+  status?: string;
+  active?: boolean;
   id: string;
   title: string;
   source: string;
@@ -53,6 +55,7 @@ const routes = [
   "/api/marketplace/opportunities?limit=100",
   "/api/watchlists",
   "/api/activity?limit=8",
+  "/api/marketplace/inventory",
 ];
 
 function useFarmStore() {

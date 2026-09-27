@@ -11,9 +11,7 @@ from app.market_data.types import effective_state
 from app.models import (
     Agent,
     AIAnalysis,
-    MarketplaceAnalysis,
     MarketplaceListing,
-    MarketplaceOutcome,
     MarketRegimeSnapshot,
     OpportunityCandidate,
     OpportunityQueueItem,
@@ -320,15 +318,10 @@ def delete_watchlist(identifier: UUID, request: Request, session: DbSession):
 
 @router.get("/marketplace/opportunities")
 def marketplace_opportunities(session: DbSession, limit: Annotated[int, Query(ge=1, le=100)] = 10):
+    from app.marketplace.pipeline import listing_data
+
     return [
-        {
-            **public(row),
-            "analyses": public(
-                session.scalars(
-                    select(MarketplaceAnalysis).where(MarketplaceAnalysis.listing_id == row.id)
-                ).all()
-            ),
-        }
+        listing_data(session, row)
         for row in session.scalars(
             select(MarketplaceListing).order_by(MarketplaceListing.created_at.desc()).limit(limit)
         )
@@ -337,19 +330,9 @@ def marketplace_opportunities(session: DbSession, limit: Annotated[int, Query(ge
 
 @router.get("/marketplace/opportunities/{identifier}")
 def marketplace_detail(identifier: UUID, session: DbSession):
+    from app.marketplace.pipeline import listing_data
+
     row = session.get(MarketplaceListing, identifier)
     if row is None:
         raise HTTPException(404, "Marketplace listing not found")
-    return {
-        **public(row),
-        "analyses": public(
-            session.scalars(
-                select(MarketplaceAnalysis).where(MarketplaceAnalysis.listing_id == identifier)
-            ).all()
-        ),
-        "outcome": public(
-            session.scalar(
-                select(MarketplaceOutcome).where(MarketplaceOutcome.listing_id == identifier)
-            )
-        ),
-    }
+    return listing_data(session, row, True)
